@@ -40,4 +40,4 @@ RUN set -xe \
 
 FROM scratch
 
-COPY --from=builder /usr/local/src/pkg-oss/build-module-artifacts/ /
+COPY --from=builder /usr/local/src/build-module-artifacts/ /
