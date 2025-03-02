@@ -1,0 +1,61 @@
+name: Build Nginx Module
+
+on:
+  workflow_dispatch:
+    inputs:
+      debian_version:
+        description: "Debian Version (e.g., 12)"
+        required: true
+      nginx_version:
+        description: "Nginx Version (e.g., 1.26.2)"
+        required: true
+      ngx_waf_version:
+        description: 'Ngx Waf Version (e.g., 10.1.2)'
+        required: false
+      cjson_version:
+        description: 'cJSON Version (e.g., 1.7.18)'
+        required: false
+      uthash_version:
+        description: 'uthash Version (e.g., 2.3.0)'
+        required: false
+
+jobs:
+  build:
+    name: Build Nginx Module
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker buildx build \
+            --file docker/Dockerfile \
+            --platform linux/amd64,linux/arm64 \
+            --tag nginx-module-builder:multiarch \
+            --build-arg DEBIAN_VERSION=${{ inputs.debian_version }} \
+            --build-arg NGINX_VERSION=${{ inputs.nginx_version }} \
+            --build-arg NGX_WAF_VER=${{ inputs.ngx_waf_version }} \
+            --build-arg LIB_CJSON_VER=${{ inputs.cjson_version }} \
+            --build-arg LIB_UTHASH_VER=${{ inputs.uthash_version }} \
+            --output type=local,dest=./output \
+            .
+
+      - name: Flatten .deb Files
+        run: |
+          mkdir -p ./debs
+          find ./output -type f -name "*.deb" -exec cp {} ./debs/ \;
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ inputs.ngx_waf_version }}"
+          name: "Release v${{ inputs.ngx_waf_version }}"
+          body: "Release v${{ inputs.ngx_waf_version }}"
+          files: ./debs/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
