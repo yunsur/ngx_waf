@@ -53,9 +53,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ inputs.ngx_waf_version }}"
-          name: "Release v${{ inputs.ngx_waf_version }}"
-          body: "Release v${{ inputs.ngx_waf_version }}"
+          tag_name: "v${{ inputs.ngx_waf_version }}-nginx-${{ inputs.nginx_version }}"
+          name: "Release v${{ inputs.ngx_waf_version }} (nginx-${{ inputs.nginx_version }})"
+          body: "Release v${{ inputs.ngx_waf_version }} for nginx-${{ inputs.nginx_version }}"
           files: ./debs/*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
